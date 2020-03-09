@@ -38,7 +38,7 @@ c_mutations_by_gene <- c_mutations_by_gene %>% mutate(Percent_Patients_With_Muta
 
 # Plot Highest to lowest % Patents with mutation for each gene
 c_mutations_by_gene$Rank <- c(1:nrow(c_mutations_by_gene)) # Add a ranking column
-plot(c_mutations_by_gene$rank, c_mutations_by_gene$Percent_Patients_With_Mutation)
+plot(c_mutations_by_gene$Rank, c_mutations_by_gene$Percent_Patients_With_Mutation)
 
 
 ## PART D - Count number of patients with each unique mutation
@@ -69,7 +69,57 @@ temp
 
 ## Part E - Calculate % Unique Patients
 
+
+# Prepare a blank table
+e_cumulative_percent_patients_with_unique_mutations <- as.tibble(data.frame(matrix(nrow=0, ncol=length(colnames(d_individual_mutations))+1 )))
+colnames(e_cumulative_percent_patients_with_unique_mutations) <- c(colnames(d_individual_mutations), "Cumulative_Patients")
+
+# Define the ranked mutation to use
+
+
+e_cumulative_percent_patients_with_unique_mutations <- as.tibble(data.frame(matrix(nrow=0, ncol=length(colnames(d_individual_mutations))+2 )))
+colnames(e_cumulative_percent_patients_with_unique_mutations) <- c(colnames(d_individual_mutations), "Cumulative_Patients", "Percent_Cumulative_Patients")
+
+for (i in 1:100) {
+# for (i in 1:1412) {
+# for (i in c(1:10, 14, 37, 55, 56, 61)) {
+
+ranked_mutation <- i
+
+
 # Take top 1 highest-ranking mutation (d, symbol, )
+e_mutations_to_analyse <- d_individual_mutations %>% filter(Rank <= ranked_mutation)
+# Take only those values that will be compared to the raw data set
+e_mutations_to_analyse <- e_mutations_to_analyse[,c("Hugo_Symbol", "HGVSc", "Start_Position", "Variant_Type", "Tumor_Seq_Allele2", "HGVSp_Short")]
+# Extract patients with this mutation in the raw data set
+e1_patients_with_matching_mutations <- b_raw_data %>% 
+  filter(Hugo_Symbol %in% e_mutations_to_analyse$Hugo_Symbol) %>%
+  filter(HGVSc %in% e_mutations_to_analyse$HGVSc) %>%
+  filter(Start_Position %in% e_mutations_to_analyse$Start_Position) %>%
+  filter(Variant_Type %in% e_mutations_to_analyse$Variant_Type) %>%
+  filter(Tumor_Seq_Allele2 %in% e_mutations_to_analyse$Tumor_Seq_Allele2) %>%
+  filter(HGVSp_Short %in% e_mutations_to_analyse$HGVSp_Short)
 
+# Count number of unique patients
+length(unique(e1_patients_with_matching_mutations$Tumor_Sample_Barcode))
 
+# Place count in a table
+e_cumulative_percent_patients_with_unique_mutations <- add_row(e_cumulative_percent_patients_with_unique_mutations,
+  Hugo_Symbol = d_individual_mutations$Hugo_Symbol[ranked_mutation],
+  HGVSc = d_individual_mutations$HGVSc[ranked_mutation],
+  Start_Position = d_individual_mutations$Start_Position[ranked_mutation],
+  Variant_Classification = d_individual_mutations$Variant_Classification[ranked_mutation],
+  Variant_Type = d_individual_mutations$Variant_Type[ranked_mutation],
+  Reference_Allele = d_individual_mutations$Reference_Allele[ranked_mutation],
+  Tumor_Seq_Allele2 = d_individual_mutations$Tumor_Seq_Allele2[ranked_mutation],
+  HGVSp_Short = d_individual_mutations$HGVSp_Short[ranked_mutation],
+  Patients_With_Mutation = d_individual_mutations$Patients_With_Mutation[ranked_mutation],
+  Percent_Patients_With_Mutation = d_individual_mutations$Percent_Patients_With_Mutation[ranked_mutation],
+  Rank = d_individual_mutations$Rank[ranked_mutation],
+  Cumulative_Patients = length(unique(e1_patients_with_matching_mutations$Tumor_Sample_Barcode)),
+  Percent_Cumulative_Patients = format(round(length(unique(e1_patients_with_matching_mutations$Tumor_Sample_Barcode)) / 103 * 100,1)))
 
+plot(e_cumulative_percent_patients_with_unique_mutations$Rank, e_cumulative_percent_patients_with_unique_mutations$Percent_Cumulative_Patients, pch=16, ylim = c(0,100), xlim = c(1,i), xaxt="none", xlab = "Mutation Rank", ylab = "Cumulative % of Patients")
+axis(1, seq(1, i, 1))
+lines(e_cumulative_percent_patients_with_unique_mutations$Rank, e_cumulative_percent_patients_with_unique_mutations$Percent_Cumulative_Patients[order(e_cumulative_percent_patients_with_unique_mutations$Rank)])
+}
