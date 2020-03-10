@@ -1,5 +1,5 @@
+#Test .gitignore
 library(tidyverse)
-library(ggplot2)
 
 # Set working directory to where the raw data file is
 setwd("C:/Users/pavels/Git/pietzak_nmibc/")
