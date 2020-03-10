@@ -63,10 +63,10 @@ d_individual_mutations$Rank <- c(1:nrow(d_individual_mutations))
 
 #### Test for duplicates in individual mutation
 ## Identify columns that identify duplicate mutations (HUGO [Gene], Start site [Mutation location], HGSV [Actual Mutation])
-temp <- d_individual_mutations[,c("Hugo_Symbol", "Start_Position", "HGVSc", "Tumor_Seq_Allele2")]
-temp1 <- duplicated(temp)
-temp <- sum(duplicated(temp))
-temp
+# temp <- d_individual_mutations[,c("Hugo_Symbol", "Start_Position", "HGVSc", "Tumor_Seq_Allele2")]
+# temp1 <- duplicated(temp)
+# temp <- sum(duplicated(temp))
+# temp
 
 
 ## Part E - Calculate % Unique Patients
@@ -135,3 +135,5 @@ b1_raw_data <- b_raw_data %>% filter(Hugo_Symbol != "TERT")
 b_raw_data <- b1_raw_data
 b2_raw_data_FGFR3 <- b_raw_data %>% filter(Hugo_Symbol == "FGFR3")
 b_raw_data <- b2_raw_data_FGFR3
+b3_raw_data_TERT_or_FGFR3 <- b_raw_data %>% filter (Hugo_Symbol == "TERT" | Hugo_Symbol == "FGFR3")
+b_raw_data <- b3_raw_data_TERT_or_FGFR3
