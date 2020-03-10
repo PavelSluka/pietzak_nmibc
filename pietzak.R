@@ -1,4 +1,5 @@
 library(tidyverse)
+library(ggplot2)
 
 # Set working directory to where the raw data file is
 setwd("C:/Users/pavels/Git/pietzak_nmibc/")
@@ -67,23 +68,20 @@ temp1 <- duplicated(temp)
 temp <- sum(duplicated(temp))
 temp
 
+
 ## Part E - Calculate % Unique Patients
 
-
 # Prepare a blank table
-e_cumulative_percent_patients_with_unique_mutations <- as.tibble(data.frame(matrix(nrow=0, ncol=length(colnames(d_individual_mutations))+1 )))
-colnames(e_cumulative_percent_patients_with_unique_mutations) <- c(colnames(d_individual_mutations), "Cumulative_Patients")
-
-# Define the ranked mutation to use
-
-
 e_cumulative_percent_patients_with_unique_mutations <- as.tibble(data.frame(matrix(nrow=0, ncol=length(colnames(d_individual_mutations))+2 )))
 colnames(e_cumulative_percent_patients_with_unique_mutations) <- c(colnames(d_individual_mutations), "Cumulative_Patients", "Percent_Cumulative_Patients")
 
+# Define the ranked mutation to use
 for (i in 1:100) {
 # for (i in 1:1412) {
+# for (i in 1:1406) {
+# for (i in c(2, 4:10)) {
 # for (i in c(1:10, 14, 37, 55, 56, 61)) {
-
+# for (i in 1:11) {
 ranked_mutation <- i
 
 
@@ -117,9 +115,23 @@ e_cumulative_percent_patients_with_unique_mutations <- add_row(e_cumulative_perc
   Percent_Patients_With_Mutation = d_individual_mutations$Percent_Patients_With_Mutation[ranked_mutation],
   Rank = d_individual_mutations$Rank[ranked_mutation],
   Cumulative_Patients = length(unique(e1_patients_with_matching_mutations$Tumor_Sample_Barcode)),
-  Percent_Cumulative_Patients = format(round(length(unique(e1_patients_with_matching_mutations$Tumor_Sample_Barcode)) / 103 * 100,1)))
-
-plot(e_cumulative_percent_patients_with_unique_mutations$Rank, e_cumulative_percent_patients_with_unique_mutations$Percent_Cumulative_Patients, pch=16, ylim = c(0,100), xlim = c(1,i), xaxt="none", xlab = "Mutation Rank", ylab = "Cumulative % of Patients")
-axis(1, seq(1, i, 1))
-lines(e_cumulative_percent_patients_with_unique_mutations$Rank, e_cumulative_percent_patients_with_unique_mutations$Percent_Cumulative_Patients[order(e_cumulative_percent_patients_with_unique_mutations$Rank)])
+  Percent_Cumulative_Patients = as.numeric(format(round(length(unique(e1_patients_with_matching_mutations$Tumor_Sample_Barcode)) / 103 * 100,1))))
 }
+
+# Plot the rankings
+
+ggplot(e_cumulative_percent_patients_with_unique_mutations, aes(x = e_cumulative_percent_patients_with_unique_mutations$Rank, y = e_cumulative_percent_patients_with_unique_mutations$Percent_Cumulative_Patients)) +
+    geom_point() +
+    geom_line() +
+    scale_x_continuous(breaks = seq(0, ranked_mutation, by = ranked_mutation / 10), limits = c(0, ranked_mutation)) +
+    scale_y_continuous(breaks = seq(0, 100, by = 10), limits = c(0,100)) +
+    #scale_y_continuous(breaks = seq(0, 100, by = 10)) +
+    labs(x = "Mutation Rank", y = "Cumulative % of Patients")
+  
+# Part F - Filter data for other focused analyses
+
+# Filtering raw data to focus analysis
+b1_raw_data <- b_raw_data %>% filter(Hugo_Symbol != "TERT")
+b_raw_data <- b1_raw_data
+b2_raw_data_FGFR3 <- b_raw_data %>% filter(Hugo_Symbol == "FGFR3")
+b_raw_data <- b2_raw_data_FGFR3
